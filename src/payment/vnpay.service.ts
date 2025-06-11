@@ -36,17 +36,13 @@ export class VNPayService {
     };
 
     const sortedParams = this.sortObject(params);
-    const signData = querystring.stringify(sortedParams, undefined, undefined, {
-      encode: false,
-    });
+    const signData = querystring.stringify(sortedParams, undefined, undefined);
     const hmac = crypto.createHmac('sha512', secretKey);
     const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
 
     sortedParams['vnp_SecureHash'] = signed;
 
-    return `${vnpUrl}?${querystring.stringify(sortedParams, undefined, undefined, {
-      encode: true,
-    })}`;
+    return `${vnpUrl}?${querystring.stringify(sortedParams, undefined, undefined)}`;
   }
 
   verifyReturnUrl(query: any): boolean {
@@ -57,9 +53,7 @@ export class VNPayService {
     delete query.vnp_SecureHashType;
 
     const sortedQuery = this.sortObject(query);
-    const signData = querystring.stringify(sortedQuery, undefined, undefined, {
-      encode: false,
-    });
+    const signData = querystring.stringify(sortedQuery, undefined, undefined);
     const hmac = crypto.createHmac('sha512', secretKey);
     const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex');
 

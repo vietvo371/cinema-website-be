@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,24 +33,19 @@ export class AuthService {
     };
   }
 
-  async register(userData: {
-    email: string;
-    password: string;
-    fullName: string;
-    phoneNumber?: string;
-  }) {
+  async register(registerDto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: userData.email },
+      where: { email: registerDto.email },
     });
 
     if (existingUser) {
-      throw new UnauthorizedException('Email already exists');
+      throw new UnauthorizedException('Email đã tồn tại');
     }
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     const user = await this.prisma.user.create({
       data: {
-        ...userData,
+        ...registerDto,
         password: hashedPassword,
       },
     });

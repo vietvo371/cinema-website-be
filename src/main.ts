@@ -13,7 +13,6 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api');
-
   // Global pipes
   app.useGlobalPipes(
     new ValidationPipe({
