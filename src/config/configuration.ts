@@ -1,5 +1,5 @@
 export default () => ({
-  port: parseInt(process.env.PORT, 10) || 3000,
+  port: parseInt(process.env.PORT || '3000', 10),
   database: {
     url: process.env.DATABASE_URL,
   },
@@ -9,7 +9,7 @@ export default () => ({
   },
   email: {
     host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10) || 587,
+    port: parseInt(process.env.EMAIL_PORT || '587', 10),
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASSWORD,
   },
