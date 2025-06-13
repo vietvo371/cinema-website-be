@@ -53,4 +53,11 @@ export class AuthService {
     const { password, ...result } = user;
     return result;
   }
+
+  // async logout(userId: string) {
+  //   await this.prisma.user.update({
+  //     where: { id: userId },
+  //     data: { refreshToken: null },
+  //   });
+  // }
 } 

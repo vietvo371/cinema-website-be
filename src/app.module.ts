@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
+import { MovieModule } from './modules/movie/movie.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -16,6 +17,7 @@ import configuration from './config/configuration';
     PrismaModule,
     AuthModule,
     UserModule,
+    MovieModule,
   ],
   controllers: [AppController],
   providers: [AppService],

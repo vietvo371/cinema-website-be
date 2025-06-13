@@ -14,15 +14,28 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
+  id            BigInt     @id @default(autoincrement())
+  email         String     @unique
   password      String
-  fullName      String
-  phoneNumber   String?
-  role          UserRole  @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  phone         String?
+  address       String?
+  role          UserRole   @default(USER)
+  status        String     @default("active")
+  refreshToken  String?
+  isActive      DateTime?
+  hashActive    String?
+  hashForget    String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now())
   bookings      Booking[]
+  preferences   UserPreference[]
+  chatSessions  ChatSession[] @relation("UserChats")
+  adminChats    ChatSession[] @relation("AdminChats")
+
+  @@index([email])
+  @@index([phone])
+  @@index([status])
+  @@index([createdAt])
 }
 
 enum UserRole {
@@ -31,68 +44,213 @@ enum UserRole {
 }
 
 model Movie {
-  id              String     @id @default(uuid())
-  title           String
-  description     String
-  duration        Int        // Duration in minutes
-  releaseDate     DateTime
-  endDate         DateTime
-  posterUrl       String?
-  trailerUrl      String?
-  status          MovieStatus @default(COMING_SOON)
-  genres          String[]
-  rating          Float      @default(0)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  showtimes       Showtime[]
+  id          BigInt     @id @default(autoincrement())
+  title       String
+  director    String?
+  duration    Int?
+  releaseDate DateTime?
+  posterUrl   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
+  genres      MovieGenre[]
+  showtimes   Showtime[]
+
+  @@index([title])
+  @@index([releaseDate])
+  @@index([createdAt])
 }
 
-enum MovieStatus {
-  COMING_SOON
-  NOW_SHOWING
-  ENDED
+model Genre {
+  id          BigInt     @id @default(autoincrement())
+  name        String     @unique
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
+  movies      MovieGenre[]
+  preferences UserPreference[]
+
+  @@index([name])
+}
+
+model MovieGenre {
+  id        BigInt   @id @default(autoincrement())
+  movieId   BigInt
+  genreId   BigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  genre     Genre    @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@index([movieId])
+  @@index([genreId])
 }
 
 model Theater {
-  id          String     @id @default(uuid())
-  name        String
-  address     String
-  totalSeats  Int
-  showtimes   Showtime[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        BigInt   @id @default(autoincrement())
+  name      String
+  location  String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  rooms     Room[]
+
+  @@index([name])
+  @@index([location])
+}
+
+model Room {
+  id         BigInt   @id @default(autoincrement())
+  theaterId  BigInt
+  name       String
+  capacity   Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  theater    Theater  @relation(fields: [theaterId], references: [id], onDelete: Cascade)
+  seats      Seat[]
+  showtimes  Showtime[]
+
+  @@index([theaterId])
+  @@index([name])
+}
+
+model Seat {
+  id        BigInt   @id @default(autoincrement())
+  roomId    BigInt
+  row       String
+  number    Int
+  type      String?
+  status    String   @default("available")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  bookings  BookingSeat[]
+
+  @@index([roomId])
+  @@index([status])
 }
 
 model Showtime {
-  id          String    @id @default(uuid())
-  movieId     String
-  theaterId   String
-  startTime   DateTime
-  endTime     DateTime
-  price       Float
-  movie       Movie     @relation(fields: [movieId], references: [id])
-  theater     Theater   @relation(fields: [theaterId], references: [id])
-  bookings    Booking[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        BigInt   @id @default(autoincrement())
+  movieId   BigInt
+  roomId    BigInt
+  startTime DateTime
+  endTime   DateTime?
+  price     Decimal?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  bookings  Booking[]
+
+  @@index([movieId])
+  @@index([roomId])
+  @@index([startTime])
+  @@index([endTime])
 }
 
 model Booking {
-  id          String    @id @default(uuid())
-  userId      String
-  showtimeId  String
-  seats       String[]  // Array of seat numbers
-  totalPrice  Float
-  status      BookingStatus @default(PENDING)
-  user        User      @relation(fields: [userId], references: [id])
-  showtime    Showtime  @relation(fields: [showtimeId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          BigInt   @id @default(autoincrement())
+  userId      BigInt
+  showtimeId  BigInt
+  bookingTime DateTime @default(now())
+  status      String   @default("confirmed")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showtime    Showtime @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  seats       BookingSeat[]
+  payment     Payment?
+
+  @@index([userId])
+  @@index([showtimeId])
+  @@index([status])
+  @@index([bookingTime])
 }
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
+model BookingSeat {
+  id        BigInt   @id @default(autoincrement())
+  bookingId BigInt
+  seatId    BigInt
+  price     Decimal?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  seat      Seat     @relation(fields: [seatId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([seatId])
+}
+
+model Payment {
+  id            BigInt   @id @default(autoincrement())
+  bookingId     BigInt   @unique
+  amount        Decimal
+  paymentMethod String?
+  status        String   @default("pending")
+  transactionId String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([paymentMethod])
+  @@index([createdAt])
+}
+
+model Promotion {
+  id          BigInt   @id @default(autoincrement())
+  code        String   @unique
+  discount    Decimal?
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([code])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model NewsEvent {
+  id          BigInt   @id @default(autoincrement())
+  title       String
+  content     String?
+  imageUrl    String?
+  publishDate DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([title])
+  @@index([publishDate])
+}
+
+model UserPreference {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt
+  genreId   BigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  genre     Genre    @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([genreId])
+}
+
+model ChatSession {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt
+  adminId   BigInt?
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  user      User     @relation("UserChats", fields: [userId], references: [id], onDelete: Cascade)
+  admin     User?    @relation("AdminChats", fields: [adminId], references: [id])
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([status])
+  @@index([startTime])
 }
