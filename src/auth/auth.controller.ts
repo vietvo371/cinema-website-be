@@ -28,8 +28,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Đăng ký tài khoản' })
   @ApiResponse({ status: 201, description: 'Đăng ký thành công.' })
   @ApiResponse({ status: 400, description: 'Yêu cầu không hợp lệ.' })
+  @ApiResponse({ status: 401, description: 'Email đã tồn tại.' })
   async register(@Body() registerDto: RegisterDto) {
-
-    return this.authService.register(registerDto);
+    const user = await this.authService.register(registerDto);
+    return  user;
   }
 } 

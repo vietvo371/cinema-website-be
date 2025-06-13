@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -21,37 +22,79 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-      },
-    };
+    try {
+      const payload = { 
+        email: user.email, 
+        sub: user.id.toString(), // Convert BigInt to string
+        role: user.role 
+      };
+      
+      return {
+        access_token: this.jwtService.sign(payload),
+        user: {
+          id: user.id.toString(), // Convert BigInt to string
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role,
+        },
+      };
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new InternalServerErrorException('Login failed');
+    }
   }
 
   async register(registerDto: RegisterDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: registerDto.email },
-    });
+    try {
+      console.log('Starting registration with data:', { ...registerDto, password: '[REDACTED]' });
+      
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: registerDto.email },
+      });
+      
+      if (existingUser) {
+        console.log('Email already exists:', registerDto.email);
+        throw new UnauthorizedException('Email đã tồn tại');
+      }
 
-    if (existingUser) {
-      throw new UnauthorizedException('Email đã tồn tại');
-    }
+      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+      console.log('Password hashed successfully');
 
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        ...registerDto,
+      const userData = {
+        email: registerDto.email,
         password: hashedPassword,
-      },
-    });
+        fullName: registerDto.fullName,
+        phone: registerDto.phone,
+        address: registerDto.address,
+        role: UserRole.USER,
+        status: 'Unverified',
+      };
+      
+      console.log('Attempting to create user with data:', { ...userData, password: '[REDACTED]' });
+      
+      const user = await this.prisma.user.create({
+        data: userData,
+      });
+      
+      console.log('User created successfully:', { id: user.id, email: user.email });
 
-    const { password, ...result } = user;
-    return result;
+      const { password, ...result } = user;
+      return result;
+    } catch (error) {
+      console.error('Registration error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+      
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException(
+        `Registration failed: ${error.message || 'Unknown error'}`
+      );
+    }
   }
 
   // async logout(userId: string) {

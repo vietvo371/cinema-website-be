@@ -63,7 +63,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Trả về thông tin người dùng.' })
   @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng.' })
   @ApiResponse({ status: 401, description: 'Không có quyền truy cập.' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.userService.findOne(id);
   }
 
@@ -75,7 +75,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng.' })
   @ApiResponse({ status: 401, description: 'Không có quyền truy cập.' })
   @ApiResponse({ status: 403, description: 'Không đủ quyền hạn.' })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
 
@@ -87,7 +87,7 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'Không tìm thấy người dùng.' })
   @ApiResponse({ status: 401, description: 'Không có quyền truy cập.' })
   @ApiResponse({ status: 403, description: 'Không đủ quyền hạn.' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.userService.remove(id);
   }
 }

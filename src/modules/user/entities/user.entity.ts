@@ -4,6 +4,7 @@ export class User {
     id: bigint;
     email: string;
     password: string;
+    fullName: string;
     phone?: string;
     address?: string;
     role: UserRole;
