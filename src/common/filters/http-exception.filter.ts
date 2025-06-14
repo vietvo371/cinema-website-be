@@ -38,33 +38,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let message = 'Internal server error';
     let errors: Record<string, string[]> | null = null;
 
-    if (exception instanceof HttpException) {
-      const exceptionResponse = exception.getResponse() as any;
-      
-      if (exception instanceof BadRequestException) {
-        message = 'Validation failed';
-        if (Array.isArray(exceptionResponse.message)) {
-          // Convert array of validation errors to object with field names
-          errors = exceptionResponse.message.reduce((acc: Record<string, string[]>, error: string) => {
-            const field = error.split(' ')[0].toLowerCase(); // Get field name from error message
-            if (!acc[field]) {
-              acc[field] = [];
-            }
-            acc[field].push(error);
-            return acc;
-          }, {});
-        } else if (typeof exceptionResponse.message === 'object') {
-          // If it's already an object, use it directly
-          errors = exceptionResponse.message;
-        } else {
-          // If it's a string, wrap it in a general error
-          errors = { general: [exceptionResponse.message] };
-        }
-      } else {
-        message = exception.message;
-      }
-    }
-
     const errorResponse = {
       statusCode: status,
       message,

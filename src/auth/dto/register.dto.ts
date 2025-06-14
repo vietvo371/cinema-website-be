@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, MinLength, ValidateIf } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'user@example.com', description: 'Email của người dùng' })
@@ -13,6 +13,13 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
   password: string;
+
+  @ApiProperty({ example: 'Password123!', description: 'Xác nhận mật khẩu' })
+  @IsString({ message: 'Mật khẩu phải là một chuỗi' })
+  @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+  @ValidateIf((o) => o.password !== o.confirmPassword, { message: 'Mật khẩu và xác nhận mật khẩu không khớp' })
+  confirmPassword: string;
 
   @ApiProperty({ example: 'Nguyễn Văn A', description: 'Họ tên đầy đủ' })
   @IsString({ message: 'Tên người dùng phải là một chuỗi' })
@@ -28,4 +35,5 @@ export class RegisterDto {
   @IsOptional()
   @IsString({ message: 'Địa chỉ phải là một chuỗi' })
   address?: string;
+
 } 

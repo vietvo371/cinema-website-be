@@ -25,15 +25,15 @@ export class AuthService {
     try {
       const payload = { 
         email: user.email, 
-        sub: user.id.toString(), // Convert BigInt to string
+        sub: user.id.toString(),
         role: user.role 
       };
       
       return {
-        access_token: this.jwtService.sign(payload),
-        refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+        access_token: this.jwtService.sign(payload, { expiresIn: process.env.JWT_EXPIRES_IN }),
+        refresh_token: this.jwtService.sign(payload, { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }),
         user: {
-          id: user.id.toString(), // Convert BigInt to string
+          id: user.id.toString(),
           email: user.email,
           fullName: user.fullName,
           role: user.role,

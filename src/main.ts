@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -23,6 +23,17 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
+      exceptionFactory: (errors) => {
+        const result = {};
+        errors.forEach((error) => {
+          result[error.property] = Object.values(error.constraints || {});
+        });
+        return new BadRequestException({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: result,
+        });
+      },
     }),
   );
 
@@ -33,7 +44,7 @@ async function bootstrap() {
   );
 
   // Global filters
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // app.useGlobalFilters(new HttpExceptionFilter());
 
   // Swagger setup
   const config = new DocumentBuilder()
