@@ -1,0 +1,40 @@
+name: CI/CD Backend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Setup Prisma
+        run: yarn prisma generate
+
+      - name: Run linting
+        run: yarn lint
+
+      - name: Run tests
+        run: yarn test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Build
+        run: yarn build
+
+      # Add deployment steps here if needed
+      # For example, deploying to a cloud provider like AWS, GCP, etc.
