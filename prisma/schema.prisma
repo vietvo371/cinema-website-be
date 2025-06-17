@@ -29,6 +29,7 @@ model User {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @default(now())
   bookings      Booking[]
+  is_master     Int        @default(0)
   preferences   UserPreference[]
   chatSessions  ChatSession[] @relation("UserChats")
   adminChats    ChatSession[] @relation("AdminChats")
@@ -47,6 +48,12 @@ enum UserRole {
 model Movie {
   id          BigInt     @id @default(autoincrement())
   title       String
+  slug_title  String
+  trailer_ytb String?
+  manufacturer String?
+  description String?
+  rate        Float
+  status      String
   director    String?
   duration    Int?
   releaseDate DateTime?

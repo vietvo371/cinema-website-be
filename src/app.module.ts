@@ -5,8 +5,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './modules/user/user.module';
-import { MovieModule } from './modules/movie/movie.module';
 import configuration from './config/configuration';
+import { MoviesModule } from './modules/movies/movies.module';
+import { CacheModule } from './common/cache/cache.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import configuration from './config/configuration';
     PrismaModule,
     AuthModule,
     UserModule,
-    MovieModule,
+    MoviesModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
